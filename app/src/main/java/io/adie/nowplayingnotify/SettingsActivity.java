@@ -14,8 +14,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
-import com.google.firebase.analytics.FirebaseAnalytics;
-
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
  * handset devices, settings are presented as a single list. On tablets,
@@ -28,8 +26,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-
-    private static FirebaseAnalytics mFirebaseAnalytics;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -123,7 +119,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
         super.onCreate(savedInstanceState);
         // Obtain the FirebaseAnalytics instance.
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         //setupActionBar();
     }
 
@@ -168,7 +163,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
 
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            final Boolean result  = sharedPref.getBoolean("app_enabled", false);
+            final Boolean result = sharedPref.getBoolean("app_enabled", false);
         }
     }
 }
