@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">Now Playing Notify</string>
+    <string name="app_notification">Notications Active</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="notification_stop">Stop</string>
+
+    <!-- Notification Strings -->
+    <string name="notification_persist_title">Persistent Foreground Notification</string>
+    <string name="notification_now_playing_title">Now Playing Notifications</string>
 
     <!-- Strings related to Settings -->
     <string name="pref_title_enable">Enable notifications</string>

@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import io.adie.nowplayingnotify.R;
+import io.adie.nowplayingnotify.service.NowPlayingTileService;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -36,7 +37,7 @@ public class AudioStateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        final Boolean app_enabled  = sharedPref.getBoolean("app_enabled", false);
+        final Boolean app_enabled = sharedPref.getBoolean("app_enabled", false);
         if (!app_enabled) {
             Log.d(TAG, "App disabled, exiting...");
             return;
@@ -56,58 +57,27 @@ public class AudioStateReceiver extends BroadcastReceiver {
         Long albumID = intent.getLongExtra("albumId", 0);
         final String desc = String.format("by %s on %s", artist, album);
 
-        Log.d(TAG, desc);
-
         final Notification.Builder builder = new Notification.Builder(context.getApplicationContext())
                 .setContentTitle(track)
                 .setContentText(desc)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_icon)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setVibrate(new long[0])
                 .setLocalOnly(true)
                 .setAutoCancel(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(context.getResources().getString(R.string.app_name));
+            builder.setChannelId(NowPlayingTileService.NOWPLAYING_NOTIFICATION_CHANNEL_ID);
         }
 
         mNotifyMgr.notify(1, builder.build());
 
-        if (AudioStateReceiver.mHandler != null)
-        {
+        if (AudioStateReceiver.mHandler != null) {
             AudioStateReceiver.mHandler.removeCallbacksAndMessages(null);
         }
 
         AudioStateReceiver.mHandler = new Handler();
         AudioStateReceiver.mHandler.postDelayed(removeTask, 1000 * 5);
     }
-
-    /*public Bitmap getAlbumart(Long album_id)
-    {
-        Log.d(TAG, String.format("ID: %d", album_id));
-        Bitmap bm = null;
-        try
-        {
-            final Uri sArtworkUri = Uri
-                    .parse("content://media/external/audio/albumart");
-
-            Uri uri = ContentUris.withAppendedId(sArtworkUri, album_id);
-
-            ParcelFileDescriptor pfd = mContext.getContentResolver()
-                    .openFileDescriptor(uri, "r");
-
-            if (pfd != null)
-            {
-                FileDescriptor fd = pfd.getFileDescriptor();
-                bm = BitmapFactory.decodeFileDescriptor(fd);
-            }else
-            {
-                Log.d(TAG, "Null pdf");
-            }
-        } catch (Exception e) {
-            Log.d(TAG, e.toString());
-        }
-        return bm;
-    }*/
 }
