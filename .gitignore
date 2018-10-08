@@ -8,3 +8,5 @@
 /captures
 .externalNativeBuild
 .idea/caches
+google-services.json
+*.apk
