@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "271434095460",
+    "firebase_url": "https://now-playing-notify.firebaseio.com",
+    "project_id": "now-playing-notify",
+    "storage_bucket": "now-playing-notify.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271434095460:android:efcdbc629330d03b",
+        "android_client_info": {
+          "package_name": "io.adie.nowplayingnotify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "271434095460-rlr8jihsjr552n86c5m8vjksv3l39j2j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAefnNENiEHDhBMD5LqoVtpjipb1BGxfMM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
