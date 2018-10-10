@@ -5,14 +5,11 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Handler;
-import android.preference.PreferenceManager;
-import androidx.core.content.ContextCompat;
-import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.core.content.ContextCompat;
 import io.adie.nowplayingnotify.R;
 import io.adie.nowplayingnotify.service.NowPlayingService;
 
@@ -39,19 +36,10 @@ public class AudioStateReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        final Boolean app_enabled = sharedPref.getBoolean("app_enabled", false);
-        if (!app_enabled) {
-            Log.d(TAG, "App disabled, exiting...");
-            return;
-        }
-
         _notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
         boolean playing = intent.getBooleanExtra("playing", false);
         if (!playing) {
-            Log.d(TAG, "Not playing");
             return;
         }
 

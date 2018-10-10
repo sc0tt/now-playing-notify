@@ -11,11 +11,11 @@ import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import io.adie.nowplayingnotify.R;
 import io.adie.nowplayingnotify.receiver.AudioStateReceiver;
 
@@ -25,11 +25,12 @@ public class NowPlayingService extends Service {
     public static final String STOP_ACTION = "STOP_NOTIFICATIONS_ACTION";
     private static final int NOTIFICATION_ID = 696;
     private static final String PERSISTENT_NOTIFICATION_CHANNEL_ID = "PERSIST";
+    private static final String TAG = "NowPlayingService";
     private final IBinder _binder = new LocalBinder();
     private AudioStateReceiver _audioReceiver;
     private Notification notification;
     private boolean _active = false;
-    private List<NowPlayingCallback> _callbacks = new ArrayList<>();
+    private MutableLiveData<Boolean> _activeState = new MutableLiveData<>();
 
     @Override
     public void onCreate() {
@@ -48,16 +49,25 @@ public class NowPlayingService extends Service {
         }
 
         _audioReceiver = new AudioStateReceiver();
+        _activeState.postValue(false);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopPersistent();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        if (STOP_ACTION.equals(intent.getAction()) && _active) {
-            stop();
-        } else if (START_ACTION.equals(intent.getAction()) && !_active) {
-            start();
+        if (intent != null) {
+            if (STOP_ACTION.equals(intent.getAction()) && _active) {
+                stop();
+            } else if (START_ACTION.equals(intent.getAction()) && !_active) {
+                start();
+            }
         }
 
         return START_STICKY;
@@ -66,13 +76,13 @@ public class NowPlayingService extends Service {
     public void start() {
         startPersistent();
         _active = true;
-        update();
+        _activeState.postValue(true);
     }
 
     public void stop() {
         stopPersistent();
         _active = false;
-        update();
+        _activeState.postValue(false);
     }
 
     private void startPersistent() {
@@ -102,29 +112,19 @@ public class NowPlayingService extends Service {
 
     private void stopPersistent() {
         if (_audioReceiver != null) {
-            unregisterReceiver(_audioReceiver);
+            try {
+                unregisterReceiver(_audioReceiver);
+            } catch (final IllegalArgumentException ex) {
+                Log.e(TAG, "Error unregistering", ex);
+            }
+            _audioReceiver = null;
         }
 
         stopForeground(true);
     }
 
-    void update() {
-        for (final NowPlayingCallback callback : _callbacks) {
-            callback.currentStatus(_active);
-        }
-    }
-
-    public boolean isActive() {
-        return _active;
-    }
-
-    public void registerCallback(final NowPlayingCallback callback) {
-        _callbacks.add(callback);
-        callback.currentStatus(_active);
-    }
-
-    public void removeCallback(final NowPlayingCallback callback) {
-        _callbacks.remove(callback);
+    public LiveData<Boolean> isActive() {
+        return _activeState;
     }
 
     @Override
@@ -136,14 +136,6 @@ public class NowPlayingService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return _binder;
-    }
-
-    public interface NowPlayingCallback {
-        default void nowPlaying(final String artist, final String album, final String track) {
-            // TODO: 10/9/2018 someday
-        }
-
-        void currentStatus(final boolean active);
     }
 
     public class LocalBinder extends Binder {
