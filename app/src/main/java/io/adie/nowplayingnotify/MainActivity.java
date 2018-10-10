@@ -6,16 +6,16 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 
+import androidx.appcompat.app.AppCompatActivity;
 import io.adie.nowplayingnotify.service.NowPlayingService;
 
-public class MainActivity extends AppCompatActivity implements NowPlayingService.NowPlayingCallback {
+public class MainActivity extends AppCompatActivity {
 
     private boolean _bound = false;
     private NowPlayingService _service;
@@ -29,15 +29,17 @@ public class MainActivity extends AppCompatActivity implements NowPlayingService
                                        IBinder service) {
             final NowPlayingService.LocalBinder bind = (NowPlayingService.LocalBinder) service;
             _service = bind.getService();
-            _service.registerCallback(MainActivity.this);
+            _service.isActive().observe(MainActivity.this, newStatus -> updateEnabledStatus(newStatus));
             _bound = true;
-            updateEnabledStatus();
+            final boolean currentStatus = _service.isActive().getValue();
+            updateEnabledStatus(currentStatus);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             _bound = false;
-            updateEnabledStatus();
+            final boolean currentStatus = _service.isActive().getValue();
+            updateEnabledStatus(currentStatus);
         }
     };
 
@@ -69,18 +71,13 @@ public class MainActivity extends AppCompatActivity implements NowPlayingService
         super.onStart();
 
         Intent intent = new Intent(this, NowPlayingService.class);
+        startService(intent);
         bindService(intent, _connection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    public void currentStatus(boolean active) {
-        _enabled.setChecked(active);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        _service.removeCallback(this);
         unbindService(_connection);
         _bound = false;
     }
@@ -105,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements NowPlayingService
         }
     }
 
-    private void updateEnabledStatus() {
-        _enabled.setChecked(_bound && _service.isActive());
+    private void updateEnabledStatus(final boolean active) {
+        _enabled.setChecked(active);
     }
 }
