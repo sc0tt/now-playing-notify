@@ -9,12 +9,19 @@ import android.os.Build;
 import android.os.IBinder;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
-import androidx.annotation.RequiresApi;
 
+import androidx.annotation.CallSuper;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ServiceLifecycleDispatcher;
 import io.adie.nowplayingnotify.R;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-public class NowPlayingTileService extends TileService implements NowPlayingService.NowPlayingCallback {
+public class NowPlayingTileService extends TileService implements LifecycleOwner {
+    private final ServiceLifecycleDispatcher _dispatcher = new ServiceLifecycleDispatcher(this);
+
     private boolean _active = false;
     private NowPlayingService _service;
     private boolean _bound = false;
@@ -24,27 +31,33 @@ public class NowPlayingTileService extends TileService implements NowPlayingServ
         public void onServiceConnected(ComponentName name, IBinder service) {
             final NowPlayingService.LocalBinder bind = (NowPlayingService.LocalBinder) service;
             _service = bind.getService();
-            _service.registerCallback(NowPlayingTileService.this);
             _bound = true;
-            updateTileState();
+            _service.isActive().observe(NowPlayingTileService.this, newStatus -> {
+                if (newStatus != null) {
+                    _active = newStatus;
+                    updateTileState();
+                }
+            });
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             _bound = false;
-            updateTileState();
         }
     };
 
     @Override
     public void onStartListening() {
         super.onStartListening();
-        updateTileState();
+        final Intent intent = new Intent(this, NowPlayingService.class);
+        startService(intent);
+        bindService(intent, _serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void onStopListening() {
         super.onStopListening();
+        unbindService(_serviceConnection);
         updateTileState();
     }
 
@@ -71,15 +84,37 @@ public class NowPlayingTileService extends TileService implements NowPlayingServ
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        _service.removeCallback(this);
+    public void onCreate() {
+        _dispatcher.onServicePreSuperOnCreate();
+        super.onCreate();
     }
 
     @Override
-    public void currentStatus(boolean active) {
-        updateTileState();
+    public void onDestroy() {
+        _dispatcher.onServicePreSuperOnDestroy();
+        super.onDestroy();
+        unbindService(_serviceConnection);
+    }
+
+    @Override
+    public Lifecycle getLifecycle() {
+        return _dispatcher.getLifecycle();
+    }
+
+    @CallSuper
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        _dispatcher.onServicePreSuperOnBind();
+        return super.onBind(intent);
+    }
+
+    @SuppressWarnings("deprecation")
+    @CallSuper
+    @Override
+    public void onStart(Intent intent, int startId) {
+        _dispatcher.onServicePreSuperOnStart();
+        super.onStart(intent, startId);
     }
 
     private void start() {
@@ -106,6 +141,4 @@ public class NowPlayingTileService extends TileService implements NowPlayingServ
             tile.updateTile();
         }
     }
-
-
 }
