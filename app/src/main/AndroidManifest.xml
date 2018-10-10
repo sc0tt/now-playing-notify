@@ -22,19 +22,10 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".receiver.AudioStateReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.android.music.metachanged" />
-                <action android:name="com.spotify.music.metadatachanged" />
-                <action android:name="com.spotify.music.metachanged" />
-            </intent-filter>
-        </receiver>
-
         <service
             android:name=".service.NowPlayingTileService"
+            android:enabled="true"
+            android:exported="true"
             android:icon="@drawable/ic_sync_black_24dp"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -43,6 +34,12 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+        <service
+            android:name=".service.NowPlayingService"
+            android:enabled="true"
+            android:exported="false"
+            android:icon="@drawable/ic_sync_black_24dp"
+            android:label="@string/npn_service_name" />
     </application>
 
 </manifest>
