@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
-        tools:text="@string/pref_prefix_bingo_title" />
+        tools:text="Test 123" />
 
     <TextView
         android:id="@+id/summary"
@@ -31,7 +31,7 @@
         app:layout_constraintEnd_toStartOf="@+id/pref_state"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title"
-        tools:text="@string/pref_prefix_bingo_summary" />
+        tools:text="Test 123" />
 
     <CheckBox
         android:id="@+id/pref_state"
