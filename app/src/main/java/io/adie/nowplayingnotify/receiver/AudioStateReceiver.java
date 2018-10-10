@@ -6,31 +6,35 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import java.util.concurrent.TimeUnit;
+
 import io.adie.nowplayingnotify.R;
-import io.adie.nowplayingnotify.service.NowPlayingTileService;
+import io.adie.nowplayingnotify.service.NowPlayingService;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class AudioStateReceiver extends BroadcastReceiver {
     private static final String TAG = AudioStateReceiver.class.getSimpleName();
+    private static final int NOTIFICATION_ID = 4242;
+    private static final long NOTIFICATION_DURATION_MS = TimeUnit.SECONDS.toMillis(5);
 
     private static Handler mHandler;
-    private NotificationManager mNotifyMgr;
-
+    private NotificationManager _notificationManager;
     Runnable removeTask = new Runnable() {
         @Override
         public void run() {
-            mNotifyMgr.cancel(1);
+            _notificationManager.cancel(NOTIFICATION_ID);
         }
     };
 
+
     public AudioStateReceiver() {
+
     }
 
     @Override
@@ -43,7 +47,7 @@ public class AudioStateReceiver extends BroadcastReceiver {
             return;
         }
 
-        mNotifyMgr = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        _notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
         boolean playing = intent.getBooleanExtra("playing", false);
         if (!playing) {
@@ -55,6 +59,7 @@ public class AudioStateReceiver extends BroadcastReceiver {
         String album = intent.getStringExtra("album");
         String track = intent.getStringExtra("track");
         Long albumID = intent.getLongExtra("albumId", 0);
+
         final String desc = String.format("by %s on %s", artist, album);
 
         final Notification.Builder builder = new Notification.Builder(context.getApplicationContext())
@@ -62,16 +67,11 @@ public class AudioStateReceiver extends BroadcastReceiver {
                 .setContentText(desc)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
                 .setSmallIcon(R.drawable.ic_icon)
-                .setPriority(Notification.PRIORITY_HIGH)
-                .setVibrate(new long[0])
                 .setLocalOnly(true)
+                .setChannelId(NowPlayingService.NOWPLAYING_NOTIFICATION_CHANNEL_ID)
                 .setAutoCancel(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(NowPlayingTileService.NOWPLAYING_NOTIFICATION_CHANNEL_ID);
-        }
-
-        mNotifyMgr.notify(1, builder.build());
+        _notificationManager.notify(NOTIFICATION_ID, builder.build());
 
         if (AudioStateReceiver.mHandler != null) {
             AudioStateReceiver.mHandler.removeCallbacksAndMessages(null);
