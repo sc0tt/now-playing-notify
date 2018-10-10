@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PreferenceFields">
+        <attr name="pref_title" format="string" />
+        <attr name="pref_summary" format="reference" />
+        <attr name="pref_checked" format="boolean"/>
+        <attr name="pref_bottom_border" format="boolean"/>
+    </declare-styleable>
+</resources>
