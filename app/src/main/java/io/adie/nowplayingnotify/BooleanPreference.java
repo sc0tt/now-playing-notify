@@ -1,4 +1,4 @@
-package net.meeplecorp.bingocaller.widgets;
+package io.adie.nowplayingnotify;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,20 +8,10 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import net.meeplecorp.bingocaller.R;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 
 public class BooleanPreference extends ConstraintLayout {
-    @BindView(R.id.title)
     TextView title;
-
-    @BindView(R.id.summary)
     TextView summary;
-
-    @BindView(R.id.pref_state)
     CheckBox state;
 
     public BooleanPreference(Context context, AttributeSet attrs) {
@@ -29,8 +19,10 @@ public class BooleanPreference extends ConstraintLayout {
         setTag(false);
 
         final View v = inflate(context, R.layout.pref_boolean, this);
+        title = v.findViewById(R.id.title);
+        summary = v.findViewById(R.id.summary);
+        state = v.findViewById(R.id.pref_state);
 
-        ButterKnife.bind(this);
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.PreferenceFields,

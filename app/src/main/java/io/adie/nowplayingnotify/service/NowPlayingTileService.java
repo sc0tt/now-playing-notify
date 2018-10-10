@@ -14,7 +14,7 @@ import android.support.annotation.RequiresApi;
 import io.adie.nowplayingnotify.R;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-public class NowPlayingTileService extends TileService {
+public class NowPlayingTileService extends TileService implements NowPlayingService.NowPlayingCallback {
     private boolean _active = false;
     private NowPlayingService _service;
     private boolean _bound = false;
@@ -24,6 +24,7 @@ public class NowPlayingTileService extends TileService {
         public void onServiceConnected(ComponentName name, IBinder service) {
             final NowPlayingService.LocalBinder bind = (NowPlayingService.LocalBinder) service;
             _service = bind.getService();
+            _service.registerCallback(NowPlayingTileService.this);
             _bound = true;
             updateTileState();
         }
@@ -48,11 +49,6 @@ public class NowPlayingTileService extends TileService {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     public void onTileRemoved() {
         super.onTileRemoved();
         if (_active) {
@@ -72,7 +68,18 @@ public class NowPlayingTileService extends TileService {
         } else {
             stop();
         }
+    }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        _service.removeCallback(this);
+    }
+
+    @Override
+    public void currentStatus(boolean active) {
+        updateTileState();
     }
 
     private void start() {
@@ -85,7 +92,7 @@ public class NowPlayingTileService extends TileService {
 
     private void stop() {
         if (_bound) {
-            _service.stopPersistent();
+            _service.stop();
         }
     }
 

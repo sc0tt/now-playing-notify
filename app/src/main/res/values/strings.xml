@@ -11,6 +11,8 @@
     <string name="notification_now_playing_title">Now Playing Notifications</string>
 
     <!-- Strings related to Settings -->
-    <string name="pref_title_enable">Enable notifications</string>
-    <string name="pref_description_enable">Controls whether the app is enabled or disabled.</string>
+    <string name="pref_title_enable">Receive Song Notifications</string>
+    <string name="pref_description_enable_currently_on">Currently displaying song notifications.</string>
+    <string name="pref_description_enable_currently_off">Notifications are not active.</string>
+    <string name="pref_info">Tip: Use the Now Playing Notify quick settings tile to quickly turn on and off notifications.</string>
 </resources>
