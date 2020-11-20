@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import android.util.Log;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
@@ -20,13 +21,14 @@ import io.adie.nowplayingnotify.R;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class NowPlayingTileService extends TileService implements LifecycleOwner {
+    private static final String TAG = TileService.class.getSimpleName();
     private final ServiceLifecycleDispatcher _dispatcher = new ServiceLifecycleDispatcher(this);
 
     private boolean _active = false;
     private NowPlayingService _service;
     private boolean _bound = false;
 
-    private ServiceConnection _serviceConnection = new ServiceConnection() {
+    private final ServiceConnection _serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             final NowPlayingService.LocalBinder bind = (NowPlayingService.LocalBinder) service;
@@ -43,15 +45,15 @@ public class NowPlayingTileService extends TileService implements LifecycleOwner
         @Override
         public void onServiceDisconnected(ComponentName name) {
             _bound = false;
+            _active = false;
+            updateTileState();
         }
     };
 
     @Override
     public void onStartListening() {
         super.onStartListening();
-        final Intent intent = new Intent(this, NowPlayingService.class);
-        startService(intent);
-        bindService(intent, _serviceConnection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -63,11 +65,11 @@ public class NowPlayingTileService extends TileService implements LifecycleOwner
 
     @Override
     public void onTileRemoved() {
-        super.onTileRemoved();
         if (_active) {
             _active = false;
             updateTileState();
         }
+        super.onTileRemoved();
     }
 
     @Override
@@ -91,9 +93,16 @@ public class NowPlayingTileService extends TileService implements LifecycleOwner
 
     @Override
     public void onDestroy() {
-        _dispatcher.onServicePreSuperOnDestroy();
         super.onDestroy();
-        unbindService(_serviceConnection);
+        _dispatcher.onServicePreSuperOnDestroy();
+        if (_bound) {
+            _bound = false;
+            try {
+                unbindService(_serviceConnection);
+            } catch (final IllegalStateException ex) {
+                Log.e(TAG, "Error stopping Now Playing Service", ex);
+            }
+        }
     }
 
     @Override
@@ -121,8 +130,15 @@ public class NowPlayingTileService extends TileService implements LifecycleOwner
         // Bind to service
         final Intent intent = new Intent(this, NowPlayingService.class);
         intent.setAction(NowPlayingService.START_ACTION);
-        startService(intent);
-        bindService(intent, _serviceConnection, Context.BIND_AUTO_CREATE);
+
+        try {
+            startService(intent);
+            bindService(intent, _serviceConnection, Context.BIND_AUTO_CREATE);
+        } catch (final IllegalStateException ex) {
+            Log.e(TAG, "Error starting Now Playing Service", ex);
+            _active = false;
+            updateTileState();
+        }
     }
 
     private void stop() {

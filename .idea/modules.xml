@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/NowPlayingNotify.iml" filepath="$PROJECT_DIR$/NowPlayingNotify.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/now-playing-notify.iml" filepath="$PROJECT_DIR$/.idea/now-playing-notify.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/now-playing-notify.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/now-playing-notify.app.iml" />
     </modules>
   </component>
 </project>

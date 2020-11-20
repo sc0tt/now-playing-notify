@@ -6,6 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.widget.RemoteViews;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,13 +24,6 @@ public class AudioStateReceiver extends BroadcastReceiver {
     private static final long NOTIFICATION_DURATION_MS = TimeUnit.SECONDS.toMillis(5);
 
     private static Handler mHandler;
-    private NotificationManager _notificationManager;
-    Runnable removeTask = new Runnable() {
-        @Override
-        public void run() {
-            _notificationManager.cancel(NOTIFICATION_ID);
-        }
-    };
 
 
     public AudioStateReceiver() {
@@ -36,7 +32,9 @@ public class AudioStateReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        _notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        final NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
+        Log.d(TAG, "Received song. " + intent.toString());
 
         boolean playing = intent.getBooleanExtra("playing", false);
         if (!playing) {
@@ -50,22 +48,23 @@ public class AudioStateReceiver extends BroadcastReceiver {
 
         final String desc = String.format("by %s on %s", artist, album);
 
-        final Notification.Builder builder = new Notification.Builder(context.getApplicationContext())
+        final Notification.Builder builder = new Notification.Builder(context.getApplicationContext(),
+                NowPlayingService.NOWPLAYING_NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(track)
                 .setContentText(desc)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
                 .setSmallIcon(R.drawable.ic_icon)
                 .setLocalOnly(true)
-                .setChannelId(NowPlayingService.NOWPLAYING_NOTIFICATION_CHANNEL_ID)
                 .setAutoCancel(true);
 
-        _notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
 
         if (AudioStateReceiver.mHandler != null) {
             AudioStateReceiver.mHandler.removeCallbacksAndMessages(null);
         }
 
         AudioStateReceiver.mHandler = new Handler();
-        AudioStateReceiver.mHandler.postDelayed(removeTask, 1000 * 5);
+        AudioStateReceiver.mHandler.postDelayed(() -> notificationManager.cancel(NOTIFICATION_ID),
+                NOTIFICATION_DURATION_MS);
     }
 }

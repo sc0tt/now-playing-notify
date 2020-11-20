@@ -8,12 +8,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Icon;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import io.adie.nowplayingnotify.R;
@@ -37,10 +39,13 @@ public class NowPlayingService extends Service {
         super.onCreate();
 
         NotificationChannel persistentChannel = new NotificationChannel(PERSISTENT_NOTIFICATION_CHANNEL_ID, getString(R.string.notification_persist_title), NotificationManager.IMPORTANCE_LOW);
+        persistentChannel.setImportance(NotificationManager.IMPORTANCE_LOW);
+
         NotificationChannel nowPlayingChannel = new NotificationChannel(NOWPLAYING_NOTIFICATION_CHANNEL_ID, getString(R.string.notification_now_playing_title), NotificationManager.IMPORTANCE_HIGH);
         nowPlayingChannel.setSound(null, null);
         nowPlayingChannel.enableLights(false);
         nowPlayingChannel.enableVibration(false);
+        nowPlayingChannel.setImportance(NotificationManager.IMPORTANCE_HIGH);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
@@ -86,26 +91,44 @@ public class NowPlayingService extends Service {
     }
 
     private void startPersistent() {
-        Intent stopIntent = new Intent(this, NowPlayingTileService.class);
+        Intent stopIntent = new Intent(this, NowPlayingService.class);
         stopIntent.setAction(STOP_ACTION);
         PendingIntent stopPendingIntent = PendingIntent.getService(this, 0, stopIntent, 0);
 
-        Notification.Builder notificationBuilder = new Notification.Builder(this)
+
+        final Notification.Action stopAction = new Notification.Action.Builder(
+                Icon.createWithResource(this, R.drawable.ic_stop_black_24dp),
+                getString(R.string.notification_stop),
+                stopPendingIntent).build();
+        Notification.Builder notificationBuilder = new Notification.Builder(this, PERSISTENT_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_icon)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.app_notification))
-                .addAction(R.drawable.ic_stop_black_24dp, getString(R.string.notification_stop), stopPendingIntent);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationBuilder.setChannelId(PERSISTENT_NOTIFICATION_CHANNEL_ID);
-        }
+                .addAction(stopAction);
 
         notification = notificationBuilder.build();
         startForeground(NOTIFICATION_ID, notification);
 
-        final IntentFilter intentFilter = new IntentFilter("com.android.music.metachanged");
-        intentFilter.addAction("com.spotify.music.metadatachanged");
-        intentFilter.addAction("com.spotify.music.metachanged");
+        final String[] actions = new String[]{
+                "com.android.music.metachanged",
+                "com.htc.music.metachanged",
+                "fm.last.android.metachanged",
+                "com.sec.android.app.music.metachanged",
+                "com.nullsoft.winamp.metachanged",
+                "com.amazon.mp3.metachanged",
+                "com.miui.player.metachanged",
+                "com.real.IMP.metachanged",
+                "com.sonyericsson.music.metachanged",
+                "com.rdio.android.metachanged",
+                "com.samsung.sec.android.MusicPlayer.metachanged",
+                "com.andrew.apollo.metachanged",
+                "com.spotify.music.metadatachanged",
+                "com.spotify.music.metachanged",
+        };
+        final IntentFilter intentFilter = new IntentFilter();
+        for (final String action : actions) {
+            intentFilter.addAction(action);
+        }
         _audioReceiver = new AudioStateReceiver();
         registerReceiver(_audioReceiver, intentFilter);
     }
