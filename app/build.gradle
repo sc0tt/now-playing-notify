@@ -8,13 +8,14 @@ android {
         applicationId "io.adie.nowplayingnotify"
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 3
+        versionCode 4
         versionName "1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
