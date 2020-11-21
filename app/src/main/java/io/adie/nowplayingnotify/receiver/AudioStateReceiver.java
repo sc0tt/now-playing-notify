@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.widget.RemoteViews;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,19 +20,14 @@ public class AudioStateReceiver extends BroadcastReceiver {
     private static final String TAG = AudioStateReceiver.class.getSimpleName();
     private static final int NOTIFICATION_ID = 4242;
     private static final long NOTIFICATION_DURATION_MS = TimeUnit.SECONDS.toMillis(5);
-
     private static Handler mHandler;
 
-
     public AudioStateReceiver() {
-
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         final NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-
-        Log.d(TAG, "Received song. " + intent.toString());
 
         boolean playing = intent.getBooleanExtra("playing", false);
         if (!playing) {
@@ -53,7 +46,7 @@ public class AudioStateReceiver extends BroadcastReceiver {
                 .setContentTitle(track)
                 .setContentText(desc)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
-                .setSmallIcon(R.drawable.ic_icon)
+                .setSmallIcon(R.drawable.ic_persist)
                 .setLocalOnly(true)
                 .setAutoCancel(true);
 

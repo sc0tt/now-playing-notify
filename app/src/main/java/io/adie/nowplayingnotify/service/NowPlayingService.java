@@ -10,29 +10,29 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Icon;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import io.adie.nowplayingnotify.R;
 import io.adie.nowplayingnotify.receiver.AudioStateReceiver;
 
 public class NowPlayingService extends Service {
-    public static final String NOWPLAYING_NOTIFICATION_CHANNEL_ID = "NOW_PLAYING";
-    public static final String START_ACTION = "START_NOW_ACTION";
-    public static final String STOP_ACTION = "STOP_NOTIFICATIONS_ACTION";
-    private static final int NOTIFICATION_ID = 696;
-    private static final String PERSISTENT_NOTIFICATION_CHANNEL_ID = "PERSIST";
+
     private static final String TAG = "NowPlayingService";
+
+    public static final String NOWPLAYING_NOTIFICATION_CHANNEL_ID = "NOW_PLAYING";
+    public static final String STOP_ACTION = "STOP_NOTIFICATIONS_ACTION";
+    public static final String PERSISTENT_NOTIFICATION_CHANNEL_ID = "PERSIST";
+    public static final int PERSISTENT_NOTIFICATION_ID = 322;
+
     private final IBinder _binder = new LocalBinder();
-    private AudioStateReceiver _audioReceiver;
-    private Notification notification;
     private boolean _active = false;
-    private MutableLiveData<Boolean> _activeState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> _activeState = new MutableLiveData<>();
+
+    private AudioStateReceiver _audioReceiver;
 
     @Override
     public void onCreate() {
@@ -66,15 +66,9 @@ public class NowPlayingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-
-        if (intent != null) {
-            if (STOP_ACTION.equals(intent.getAction()) && _active) {
-                stop();
-            } else if (START_ACTION.equals(intent.getAction()) && !_active) {
-                start();
-            }
+        if (intent != null && STOP_ACTION.equals(intent.getAction()) && _active) {
+            stop();
         }
-
         return START_STICKY;
     }
 
@@ -101,13 +95,13 @@ public class NowPlayingService extends Service {
                 getString(R.string.notification_stop),
                 stopPendingIntent).build();
         Notification.Builder notificationBuilder = new Notification.Builder(this, PERSISTENT_NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_icon)
+                .setSmallIcon(R.drawable.ic_persist)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.app_notification))
                 .addAction(stopAction);
 
-        notification = notificationBuilder.build();
-        startForeground(NOTIFICATION_ID, notification);
+        Notification notification = notificationBuilder.build();
+        startForeground(PERSISTENT_NOTIFICATION_ID, notification);
 
         final String[] actions = new String[]{
                 "com.android.music.metachanged",
@@ -148,11 +142,6 @@ public class NowPlayingService extends Service {
 
     public LiveData<Boolean> isActive() {
         return _activeState;
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        return super.onUnbind(intent);
     }
 
     @Nullable

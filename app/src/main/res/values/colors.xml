@@ -8,4 +8,6 @@
     <color name="white">#fff</color>
     <color name="divider">#e0e0e0</color>
     <color name="notification_background">#e4e4e4</color>
+
+    <color name="persist_icon">#FF5722</color>
 </resources>

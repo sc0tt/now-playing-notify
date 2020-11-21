@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Now Playing Notify</string>
     <string name="npn_service_name">Now Playing Notify Service</string>
-    <string name="app_notification">Notications Active</string>
+    <string name="app_notification">Notifications Active</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
     <string name="notification_stop">Stop</string>

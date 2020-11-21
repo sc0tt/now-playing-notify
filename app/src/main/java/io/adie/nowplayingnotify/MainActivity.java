@@ -22,24 +22,28 @@ public class MainActivity extends AppCompatActivity {
 
     private BooleanPreference _enabled;
 
-    private ServiceConnection _connection = new ServiceConnection() {
+    private final ServiceConnection _connection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             final NowPlayingService.LocalBinder bind = (NowPlayingService.LocalBinder) service;
             _service = bind.getService();
-            _service.isActive().observe(MainActivity.this, newStatus -> updateEnabledStatus(newStatus));
+            _service.isActive().observe(MainActivity.this, MainActivity.this::updateEnabledStatus);
             _bound = true;
-            final boolean currentStatus = _service.isActive().getValue();
+            updateStatus();
+        }
+
+        private void updateStatus() {
+            final Boolean serviceResult = _service.isActive().getValue();
+            final boolean currentStatus = serviceResult == null ? false : serviceResult;
             updateEnabledStatus(currentStatus);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             _bound = false;
-            final boolean currentStatus = _service.isActive().getValue();
-            updateEnabledStatus(currentStatus);
+            updateStatus();
         }
     };
 
@@ -93,13 +97,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()) {
-            case R.id.action_oss:
-                startActivity(new Intent(this, OssLicensesMenuActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.action_oss) {
+            startActivity(new Intent(this, OssLicensesMenuActivity.class));
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateEnabledStatus(final boolean active) {
